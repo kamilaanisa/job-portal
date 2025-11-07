@@ -1,13 +1,23 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AuthController; 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\JobController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\SendEmailController;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register'); // ← showRegisterForm
+Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login'); // ← showLoginForm
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/hello', function () {
     return "Halo, ini halaman percobaan route!";
@@ -51,7 +61,6 @@ Route::get('/admin', function () {
 
 // ========== SOAL 2: Route /admin/jobs untuk admin - pakai Blade ==========
 Route::get('/admin/jobs', function () {
-    // Data dummy lowongan (nanti bisa diambil dari database)
     $jobs = [
         ['position' => 'Web Developer', 'company' => 'PT Tech Indonesia', 'status' => 'Aktif'],
         ['position' => 'UI/UX Designer', 'company' => 'CV Kreatif Digital', 'status' => 'Aktif'],
@@ -61,12 +70,15 @@ Route::get('/admin/jobs', function () {
         ['position' => 'DevOps Engineer', 'company' => 'Tech Corp', 'status' => 'Ditutup'],
     ];
     
-    // Hitung statistik
     $totalJobs = count($jobs);
     $activeJobs = count(array_filter($jobs, fn($job) => $job['status'] == 'Aktif'));
     $closedJobs = $totalJobs - $activeJobs;
     
     return view('admin-jobs', compact('jobs', 'totalJobs', 'activeJobs', 'closedJobs'));
 })->middleware(['auth', 'isAdmin']);
+
+// ========== EMAIL ROUTES ==========
+Route::get('/send-mail', [SendEmailController::class,'index'])->name('kirim-email');
+Route::post('/post-email', [SendEmailController::class, 'store'])->name('post-email');
 
 require __DIR__.'/auth.php';

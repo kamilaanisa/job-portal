@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use App\Jobs\SendWelcomeEmailJob;
 
 class RegisteredUserController extends Controller
 {
@@ -44,6 +45,15 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+
+         $userData = [
+            'name' => $user->name,
+            'email' => $user->email,
+            'username' => $user->username ?? '-',
+            'phone' => $user->phone ?? '-',
+        ];
+
+         dispatch(new SendWelcomeEmailJob($userData));
 
         return redirect(route('dashboard', absolute: false));
     }
